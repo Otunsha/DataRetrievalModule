@@ -1,0 +1,48 @@
+import psutil #this library will help us retrieve running processes 
+from datetime import datetime #the datetime module supplies classes for manipulating date and time.
+import time
+import os
+
+#Include an entry point for the console based interface
+#being able to pipe information between the resource monitor and gui
+#storing and historical analysis
+#Visualization and reporting
+#Ask chatgpt about more things to add
+
+#Ensure to reference this code!!!
+def get_process(): # this function is about getting the process
+    p = [] #this function is for storing the retrieved processes, this is one of the advantages of data structures
+    for process in psutil.process_iter(): #process_iter() is a function for getting processes in a loop 
+                                          #process is the iteration variable, selecting processes in the psutil.process_iter()
+     with process.oneshot(): #the oneshot function helps retrieve information in a faster more efficient way
+      try:
+                # get the process priority (a lower value means a more prioritized process)
+           nice = int(process.nice())
+      except psutil.AccessDenied:
+           nice = 0
+      try:
+        # get the memory usage in bytes
+            memory_usage = process.memory_full_info().uss
+      except psutil.AccessDenied:
+            memory_usage = 0
+           #Retrieve and store process information
+     pid =process.pid #getting the process id
+   # Everything here was gotten from the psutil documentation (Reference!!!)
+    name =process.name() # execute internal routine once collecting multiple info
+    create_time =process.create_time() # return cached value
+    ppid = process.ppid() # return cached value
+    status =process.status() # return cached value
+
+    #Append the process information to the list 
+    p.append({
+            "pid": pid, 
+            "name": name, 
+            "create_time": create_time, 
+            "ppid": ppid, 
+            "status": status
+            }) #i'm trying to constantly update the list p with process
+
+    return p #so this function basically just returns the list of processes
+    
+    
+    
