@@ -35,8 +35,3 @@ def get_process_info():
       conn.close()
 
 get_process_info()
-
-
-
-
-
