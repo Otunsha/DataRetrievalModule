@@ -1,48 +1,42 @@
-import psutil #this library will help us retrieve running processes 
-from datetime import datetime #the datetime module supplies classes for manipulating date and time.
-import time
-import os
-
-#Include an entry point for the console based interface
-#being able to pipe information between the resource monitor and gui
-#storing and historical analysis
-#Visualization and reporting
-#Ask chatgpt about more things to add
-
-#Ensure to reference this code!!!
-def get_process(): # this function is about getting the process
-    p = [] #this function is for storing the retrieved processes, this is one of the advantages of data structures
-    for process in psutil.process_iter(): #process_iter() is a function for getting processes in a loop 
-                                          #process is the iteration variable, selecting processes in the psutil.process_iter()
-     with process.oneshot(): #the oneshot function helps retrieve information in a faster more efficient way
-      try:
-                # get the process priority (a lower value means a more prioritized process)
-           nice = int(process.nice())
-      except psutil.AccessDenied:
-           nice = 0
-      try:
-        # get the memory usage in bytes
-            memory_usage = process.memory_full_info().uss
-      except psutil.AccessDenied:
-            memory_usage = 0
-           #Retrieve and store process information
-     pid =process.pid #getting the process id
-   # Everything here was gotten from the psutil documentation (Reference!!!)
-    name =process.name() # execute internal routine once collecting multiple info
-    create_time =process.create_time() # return cached value
-    ppid = process.ppid() # return cached value
-    status =process.status() # return cached value
-
-    #Append the process information to the list 
-    p.append({
-            "pid": pid, 
-            "name": name, 
-            "create_time": create_time, 
-            "ppid": ppid, 
-            "status": status
-            }) #i'm trying to constantly update the list p with process
-
-    return p #so this function basically just returns the list of processes
+import psutil, datetime
+import mysql.connector
+        
+def get_process_info():
     
+    conn = mysql.connector.connect(user='root', password='password', host='localhost', database='process')
+    cursor_conn = conn.cursor()
+
+    for proc in psutil.process_iter(attrs=['pid', 'name', 'memory_info', 'num_threads', 'ppid', 'status', 'create_time']):
+      info = proc.info
+      pid = info['pid']
+      name = info['name']
+      memory_info = info['memory_info']  # Get the memory_info dictionary
+      rss = memory_info.rss
+      vms = memory_info.vms
+      num_page_faults = memory_info.num_page_faults
+      wset = memory_info.wset
+      peak_wset = memory_info.peak_wset
+      num_threads = info['num_threads']
+      ppid = info['ppid']
+      status = info['status']
+      create_time = info['create_time']
+
+      #Define Sql query with placeholders
+      insert_query = """
+                     INSERT INTO process_monitor(pid,name,rss,vms,num_page_faults,wset,peak_wset,num_threads,ppid,status,create_time)
+                     VALUES(%s,%s,%s,%s,%d,%s,%s,%d,%d,%s,%s)"""
+
+      cursor_conn.execute(insert_query, (pid, name, rss,vms,num_page_faults,wset,peak_wset,num_threads,ppid,status,create_time ))
+    #Commit changes to the database
+      conn.commit()
     
-    
+    #Close Connections
+      cursor_conn.close()
+      conn.close()
+
+get_process_info()
+
+
+
+
+
