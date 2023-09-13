@@ -1,1 +1,1 @@
-SELECT * FROM memory_usage;
+SELECT * FROM process_monitor;
