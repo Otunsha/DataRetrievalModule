@@ -1,1 +1,5 @@
-SELECT * FROM process_monitor;
+INSERT INTO avg_wset (PID, avg_mem)
+SELECT PID, AVG(wset) AS avg_mem
+FROM process_monitor
+WHERE TIME_STAMP >= '2023-09-14 14:11:49' AND TIME_STAMP <= '2023-09-14 19:46:43'
+GROUP BY PID
