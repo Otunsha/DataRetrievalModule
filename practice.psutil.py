@@ -8,7 +8,7 @@ import time
 def convert_bytes(bytes):
     if bytes is None:
         return "Null"
-    return f"{bytes/(1024*1024):.2f}MB"
+    return bytes/(1024*1024)
 
 #function to collect and store process information
 def get_process_info():
