@@ -1,1 +1,1 @@
-SELECT * FROM alerts;
+SELECT * FROM process_monitor;
