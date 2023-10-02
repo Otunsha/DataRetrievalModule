@@ -18,8 +18,7 @@ class CustomTableWidget(QTableWidget):
                 item = QTableWidgetItem(str(col_data))
                 self.setItem(row_num, col_num, item)
 
-
-def proc_display():
+def fetch_data():
     try:
        #Connect to database
        conn = mysql.connector.connect(user='root', password='password', host='localhost', database='process')
@@ -36,27 +35,52 @@ def proc_display():
        cursor_conn.close()
        conn.close()
       
-       # Update the custom table widget with the new data
-       table.populate_table(proc_info)
+       return proc_info
    
     except mysql.connector.Error as ex:
        print(f"Error: {ex}")
+       return []
 
+def sort_by_pid():
+    table.sortItems(0)
+
+def sort_by_name():
+    table.sortItems(2)
 
 app = QApplication(sys.argv)
 main_window = QMainWindow()
 main_window.setWindowTitle("Memory Resource Monitor")
-main_window.setGeometry(100,100,2000,800)
+main_window.setGeometry(100, 100, 2000, 800)
 
 table = CustomTableWidget(main_window)
-table.setGeometry(100,50,1350,700)
+table.setGeometry(100, 50, 1350, 700)
 
-#Timer for the user interface to be updated in intervals
+# Create a menu bar
+menu_bar = main_window.menuBar()
+
+# Create a "Sort" menu
+sort_menu = QMenu("Sort", main_window)
+
+# Add actions to the "Sort" menu
+sort_by_pid_action = QAction("Sort by PID", main_window)
+sort_by_pid_action.triggered.connect(sort_by_pid)
+sort_menu.addAction(sort_by_pid_action)
+
+sort_by_name_action = QAction("Sort by Name", main_window)
+sort_by_name_action.triggered.connect(sort_by_name)
+sort_menu.addAction(sort_by_name_action)
+
+# Add the "Sort" menu to the menu bar
+menu_bar.addMenu(sort_menu)
+
+# Timer for updating the table
 interval = QTimer()
-interval.timeout.connect(proc_display)
-interval.start(10000) #10 seconds interval
+interval.timeout.connect(lambda: table.populate_table(fetch_data()))
+interval.start(10000)  # 10 seconds interval
 
-main_window.show() #To ensure the window gets displayed
+# Initial data population
+table.populate_table(fetch_data())
 
+main_window.show()
 
-sys.exit(app.exec()) #the code stops running once the window is closed
+sys.exit(app.exec())
